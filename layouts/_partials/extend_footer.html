@@ -1,0 +1,48 @@
+{{- /* 自定义扩展：滚动淡入 + 顶栏滚动收缩（用 IntersectionObserver + passive scroll） */ -}}
+<script>
+(function () {
+    // 滚动淡入：给指定元素加 fade-up class，进入视口加 visible
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
+
+        // 文章卡片、首页信息块、TOC、文章正文块
+        document.querySelectorAll(
+            '.post-entry, .first-entry, .home-info, .toc, .post-content > *'
+        ).forEach(function (el) {
+            el.classList.add('fade-up');
+            io.observe(el);
+        });
+
+        // 归档列表项也淡入
+        document.querySelectorAll('.archive-entry').forEach(function (el) {
+            el.classList.add('fade-up');
+            io.observe(el);
+        });
+    } else {
+        // 不支持 IO 的浏览器直接全部显示
+        document.querySelectorAll('.post-entry, .first-entry, .home-info, .toc, .post-content > *')
+            .forEach(function (el) { el.classList.add('visible'); });
+    }
+
+    // 顶栏滚动收缩 + 阴影
+    var header = document.querySelector('.header');
+    if (header) {
+        var onScroll = function () {
+            if (window.scrollY > 24) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+})();
+</script>

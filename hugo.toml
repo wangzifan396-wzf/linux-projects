@@ -1,0 +1,109 @@
+baseURL = 'https://operations-washing-globe-capture.trycloudflare.com/'
+languageCode = 'zh-cn'
+title = '我的博客'
+defaultContentLanguage = 'zh'
+theme = 'PaperMod'
+enableRobotsTXT = true
+enableEmoji = true
+summaryLength = 70
+paginate = 10
+
+[params]
+  description = '一台 Linux 家用主机上用 Hugo + Cloudflare Tunnel 搭起的个人技术博客'
+  author = 'wzf'
+  defaultTheme = 'auto'
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = true
+  ShowToc = true
+  UseHugoToc = true
+  TocOpen = false
+  SocialShare = true
+  ShareButtons = ['weibo', 'wechat-qr', 'copy']
+  disableSpecial1stPost = true
+  disableAnchoredHeadings = false
+  hideMeta = false
+  hideSummary = false
+  DateFormat = '2006-01-02'
+
+  [params.homeInfoParams]
+    Title = '你好，欢迎来到我的博客 👋'
+    Content = '''
+这里记录我在一台 **Linux 家用主机**上折腾的各种事情：零成本搭站、Cloudflare Tunnel、输入法、服务器配置，以及一切技术小实验。
+
+站点由 [Hugo](https://gohugo.io/) 生成静态页面，通过 [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/) 暴露到公网，零域名、零备案、零端口。
+
+> 本机没有公网 IP，但通过 Cloudflare 边缘网络反向访问，所以你才能看到这个页面。
+'''
+
+  [params.assets]
+    favicon = '/favicon.ico'
+
+  [[params.socialIcons]]
+    name = 'github'
+    url = 'https://github.com/wangzifan396-wzf'
+  [[params.socialIcons]]
+    name = 'bilibili'
+    url = 'https://space.bilibili.com/319363325'
+  [[params.socialIcons]]
+    name = 'csdn'
+    url = 'https://blog.csdn.net/m0_74023007'
+  [[params.socialIcons]]
+    name = 'xiaoheihe'
+    url = 'https://www.xiaoheihe.cn/community/45509815'
+  [[params.socialIcons]]
+    name = 'email'
+    url = 'mailto:you@example.com'
+  [[params.socialIcons]]
+    name = 'rss'
+    url = '/index.xml'
+
+[markup]
+  [markup.highlight]
+    lineNos = false
+    codeFences = true
+    guessSyntax = true
+    style = 'monokai'
+    tabWidth = 2
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+
+[outputs]
+  home = ['HTML', 'RSS', 'JSON']
+
+[taxonomies]
+  tag = 'tags'
+  category = 'categories'
+
+[[menu.main]]
+  identifier = 'posts'
+  name = '文章'
+  url = '/posts/'
+  weight = 10
+[[menu.main]]
+  identifier = 'tags'
+  name = '标签'
+  url = '/tags/'
+  weight = 20
+[[menu.main]]
+  identifier = 'archives'
+  name = '归档'
+  url = '/archives/'
+  weight = 30
+[[menu.main]]
+  identifier = 'search'
+  name = '搜索'
+  url = '/search/'
+  weight = 40
+[[menu.main]]
+  identifier = 'about'
+  name = '关于'
+  url = '/about/'
+  weight = 50

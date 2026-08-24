@@ -1,0 +1,360 @@
+/* === Apple-style 视觉优化（基于 lulusiyuyu 的方案裁剪而来） === */
+
+:root {
+    --apple-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+        "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* 平滑主题切换 */
+html, body {
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+body {
+    font-family: var(--apple-font);
+    letter-spacing: -0.01em;
+}
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+}
+
+/* 顶栏毛玻璃 */
+.header {
+    background: rgba(245, 245, 247, 0.72) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    transition: background 0.4s ease, border-bottom 0.4s ease;
+}
+[data-theme="dark"] .header {
+    background: rgba(29, 29, 31, 0.72) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 文章卡片：圆角 + 阴影 + hover 微缩 */
+.post-entry {
+    border-radius: 18px !important;
+    padding: 26px 26px !important;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    border: 1px solid transparent;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.post-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.09);
+}
+[data-theme="dark"] .post-entry {
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] .post-entry:hover {
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
+}
+
+/* 首页 home-info 块 */
+.home-info {
+    padding: 22px 0 30px;
+}
+.home-info .entry-content {
+    line-height: 1.75;
+}
+
+/* 文章页正文：行高更友好 */
+.post-content {
+    line-height: 1.8;
+}
+.post-content p {
+    margin: 1.1em 0;
+}
+
+/* 图片圆角 */
+.post-content img {
+    border-radius: 14px;
+}
+
+/* 代码块圆角 */
+.highlight, pre {
+    border-radius: 12px !important;
+}
+.copy-code {
+    border-radius: 6px !important;
+}
+
+/* Pill 形按钮 */
+.button,
+.profile_inner .buttons .button {
+    border-radius: 980px !important;
+    padding: 10px 22px !important;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.button:hover {
+    transform: scale(1.03);
+}
+
+/* 分享按钮：圆角小圆 */
+.share-buttons li a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--entry);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+.share-buttons li a:hover {
+    transform: translateY(-2px) scale(1.05);
+    color: var(--link-color);
+}
+.share-buttons li a svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* TOC 圆角 */
+.toc {
+    border-radius: 14px;
+}
+
+/* 表格美化 */
+.post-content table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* 引用块圆角 */
+.post-content blockquote {
+    border-radius: 0 10px 10px 0;
+    background: rgba(0, 122, 255, 0.04);
+}
+
+/* 暗色顶栏文字 */
+[data-theme="dark"] .header,
+[data-theme="dark"] .header * {
+    color: #f5f5f7 !important;
+}
+[data-theme="dark"] .header svg {
+    fill: #f5f5f7 !important;
+}
+[data-theme="dark"] .header a:hover {
+    color: #2997ff !important;
+}
+
+/* 屏蔽滚动回弹 */
+html, body {
+    overscroll-behavior-y: none;
+}
+
+/* 选中文本颜色 */
+::selection {
+    background: rgba(0, 122, 255, 0.18);
+}
+[data-theme="dark"] ::selection {
+    background: rgba(41, 151, 255, 0.28);
+}
+
+/* === UI 排版优化（第二轮） === */
+
+/* 标题字号层级：h1-h4 视觉对比更鲜明 */
+.post-content h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 1.6em 0 0.7em;
+    line-height: 1.3;
+}
+.post-content h2 {
+    font-size: 1.4rem;
+    font-weight: 650;
+    margin: 1.5em 0 0.6em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.35;
+}
+.post-content h3 {
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 1.3em 0 0.5em;
+    line-height: 1.4;
+}
+.post-content h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.1em 0 0.4em;
+    color: var(--secondary);
+}
+
+/* 段落与列表间距更舒服 */
+.post-content p {
+    margin: 1.25em 0;
+}
+.post-content ul,
+.post-content ol {
+    padding-left: 1.6em;
+    margin: 1em 0;
+}
+.post-content li {
+    margin: 0.4em 0;
+}
+.post-content li > p {
+    margin: 0.4em 0;
+}
+
+/* 引用块：左边色条 + 淡背景 */
+.post-content blockquote {
+    border-left: 3px solid var(--link-color);
+    padding: 0.6em 1.1em;
+    margin: 1.4em 0;
+    color: var(--secondary);
+    background: rgba(0, 122, 255, 0.04);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.95em;
+}
+.post-content blockquote p {
+    margin: 0.5em 0;
+}
+[data-theme="dark"] .post-content blockquote {
+    background: rgba(41, 151, 255, 0.08);
+}
+
+/* 文章元信息更轻 */
+.post-meta {
+    font-size: 0.82rem;
+    color: var(--secondary);
+    letter-spacing: 0.01em;
+}
+
+/* 文章列表卡片标题层级更清晰 */
+.post-entry .entry-header h2 {
+    font-size: 1.25rem;
+    font-weight: 650;
+    margin: 0 0 0.3em;
+    line-height: 1.35;
+}
+.first-entry .entry-header h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 0.4em;
+    line-height: 1.3;
+}
+
+/* 首页 home-info Title 强对比 */
+.home-info .entry-header h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+}
+.home-info .entry-content {
+    color: var(--secondary);
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+/* 表格行间距 + 表头加粗 */
+.post-content table {
+    border-collapse: collapse;
+    margin: 1.4em 0;
+    width: 100%;
+}
+.post-content table th {
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 0.5em 0.8em;
+}
+[data-theme="dark"] .post-content table th {
+    background: rgba(255, 255, 255, 0.04);
+}
+.post-content table td {
+    padding: 0.5em 0.8em;
+}
+
+/* 行内代码 */
+.post-content code {
+    font-size: 0.88em;
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] .post-content code {
+    background: rgba(255, 255, 255, 0.08);
+}
+.post-content pre code {
+    padding: 0;
+    background: transparent;
+    font-size: 0.85em;
+}
+
+/* === 滚动淡入动画（由 extend_footer.html 注入的 JS 加 .visible class） === */
+.fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+.fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 减少动效偏好：直接显示，不做动画 */
+@media (prefers-reduced-motion: reduce) {
+    .fade-up {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
+/* === 顶栏滚动收缩 === */
+.header {
+    transition: background 0.4s ease, border-bottom 0.4s ease,
+                box-shadow 0.3s ease, height 0.3s ease;
+}
+.header.scrolled {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .header.scrolled {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* === 文章卡片间距统一 === */
+.first-entry,
+.post-entry {
+    margin-bottom: 22px;
+}
+
+/* 标签 chip 圆角更友好 */
+.post-tags a {
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+.post-tags a:hover {
+    transform: translateY(-1px);
+}
+
+/* 面包屑更淡 */
+.breadcrumbs {
+    font-size: 0.82rem;
+    color: var(--tertiary);
+}
+
+/* 上下篇导航卡片化 */
+.post-nav-link {
+    border-radius: 14px;
+    transition: all 0.25s ease;
+}
+.post-nav-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .post-nav-link:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+

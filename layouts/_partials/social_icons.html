@@ -1,0 +1,20 @@
+<div class="social-icons" {{ with .align}}align="{{.}}" {{- end }}>
+    {{- range site.Params.socialIcons }}
+    <a href="{{ trim .url " " | safeURL }}" target="_blank" rel="noopener noreferrer me"
+        title="{{ (.title | default .name) | title }}">
+        {{- $name := lower (trim .name " ") -}}
+        {{- if eq $name "csdn" -}}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 22" width="28" height="22">
+            <rect width="28" height="22" rx="4" fill="#FC5531" />
+            <text x="14" y="15" text-anchor="middle" font-size="6.5" font-weight="700" fill="#fff" font-family="Arial, Helvetica, sans-serif" letter-spacing="0.3">CSDN</text>
+        </svg>
+        {{- else if or (eq $name "xiaoheihe") (eq $name "heybox") -}}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L19.5 8 12 11.8 4.5 8 12 4.2zM4 9.5l7 3.5v7.5L4 16.5V9.5zm9 11V13l7-3.5v7L13 20.5z" />
+        </svg>
+        {{- else -}}
+        {{ partial "svg.html" . }}
+        {{- end -}}
+    </a>
+    {{- end }}
+</div>
