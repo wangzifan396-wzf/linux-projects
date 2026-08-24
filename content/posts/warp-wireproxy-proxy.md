@@ -158,7 +158,7 @@ python3 register-warp.py
 > - WARP API 的 `key` 字段 **就是你 WireGuard 公钥**，不是随便填的 install_id
 > - 私钥 **本地生成不上传**，只把公钥发给 Cloudflare。这是标准 WireGuard 协议做法
 > - 注册响应里有 `account.license`（一个 24 字符的 key），那是 WARP+ 升级用，普通免费用户可忽略
-> - `Endpoint` 用域名 `engage.cloudflareclient.com:2408` 即可，wireproxy 内部会 DNS 解析（如果域名只解析到 IPv6 而 IPv6 不通，可改成 `162.159.192.8:2408` 等具体 IP）
+> - `Endpoint` 默认用域名 `engage.cloudflareclient.com:2408`，但国内很多运营商封了 2408 端口的 UDP，**建议直接写 IPv4 IP + 备用端口**，见第 8.1 节实测排查（本机实测 `188.114.96.1:500` 可用）
 
 ---
 
@@ -313,11 +313,43 @@ WARP 是 Cloudflare 的产品，目的是加密 + 加速，**不是匿名 VPN**�
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
-| `wireproxy` 启动后没有 `warp=on` | WireGuard 握手失败 | 看 `journalctl --user -u wireproxy-warp -f`，常见是 endpoint 网络不通；试改 `Endpoint = 162.159.192.8:2408` |
+| `wireproxy` 启动后没有 `warp=on` | WireGuard 握手失败 | 看 `journalctl --user -u wireproxy-warp -f`，常见是 endpoint 被运营商 QoS（UDP 丢包），**见 8.1 节批量测可用 IP+端口** |
 | `curl: (97) Can't complete SOCKS5 connection to xxx` (code 4) | 目标域名解析后的 IP 在 `0.0.0.0/0` 范围内，wireproxy 拒绝环回 | 这是预期行为，访问 Cloudflare 自家服务（如 trycloudflare.com）会出现，**忽略即可** |
 | Firefox 显示 "Unable to connect" 但 curl SOCKS5 OK | Firefox 没读到 user.js | 确认 Firefox 完全退出后重启（不是关窗）；用 `about:support` 看 profile 路径 |
 | 速度慢 | 选到了远的 Cloudflare 边缘 | 多测几次 `1.1.1.1/cdn-cgi/trace` 看 `colo`，通常国内会选 `LAX`/`SJC`，香港出口被 Cloudflare 限制时改 endpoint |
 | `warp=off` 但 HTTP=200 | 站点可能用了 Cloudflare CDN | 看 `1.1.1.1/cdn-cgi/trace` 的 `warp` 字段，必须是 `on` 才算走代理 |
+
+---
+
+## 8.1 WARP endpoint 被封怎么办（实测排查）
+
+**现象**：`journalctl --user -u wireproxy-warp -f` 一直刷 `Handshake did not complete after 5 seconds, retrying`，curl SOCKS5 超时，但 `nc -u -z 162.159.192.1 2408` 显示 "succeeded"。
+
+**原因**：运营商对 WARP 默认 endpoint（`162.159.192.1:2408`）的 UDP 流量做了 QoS/丢包。注意 `nc -u -z` 对 UDP **不可靠**——它发空包，只要没收到 ICMP port unreachable 就报 "succeeded"，但 WireGuard 握手包（含真实载荷）会被丢弃。**所以 nc 通 ≠ WG 握手能通**。
+
+**排查**：批量测不同 IP + 端口组合，找到能握手的。WARP 有多个 endpoint IP（`162.159.192.x`、`188.114.9x.x`）+ 支持几十个端口。实测 `162.159.192.1` 的所有端口都被封，换到 `188.114.96.1` 后端口 500 能通。
+
+```bash
+# 批量测 IP + 端口，第一个能 warp=on 的就停
+cd ~/Files/proxy
+for ep in 188.114.96.1:500 188.114.97.1:500 162.159.192.8:500 \
+          188.114.96.1:854 188.114.96.1:4500 188.114.96.1:2408; do
+  sed -i "s/^Endpoint = .*/Endpoint = $ep/" wireproxy.conf
+  systemctl --user restart wireproxy-warp.service
+  sleep 4
+  if curl -sS --max-time 5 --socks5-hostname 127.0.0.1:1080 \
+      https://1.1.1.1/cdn-cgi/trace 2>/dev/null | grep -q "warp=on"; then
+    echo ">>> $ep 可用!"
+    break
+  else
+    echo "$ep 不通"
+  fi
+done
+```
+
+**本机实测可用**：`Endpoint = 188.114.96.1:500`（出口 LAX，IP `104.28.251.46`）。不同地区/运营商可用的组合不同，以批量测试结果为准。
+
+> WARP 支持的备用端口（社区常用，挨个试到能握手为止）：500, 854, 859, 864, 878, 880, 890, 891, 894, 903, 908, 928, 934, 939, 942, 943, 945, 946, 955, 968, 987, 988, 1002, 1010, 1012, 1014, 1018, 1070, 1074, 1180, 1387, 1703, 1843, 2371, 2408, 2506, 3138, 3476, 3581, 3854, 4177, 4198, 4233, 4500, 5279, 5956, 7103, 7152, 7156, 7281, 7558, 8319, 8742, 8854, 8886。
 
 ---
 
@@ -374,6 +406,7 @@ curl --socks5-hostname 127.0.0.1:1080 https://1.1.1.1/cdn-cgi/trace | grep warp=
 | SOCKS5 端口 | `127.0.0.1:1080` |
 | HTTP 代理端口 | `127.0.0.1:1081` |
 | systemd unit | `~/.config/systemd/user/wireproxy-warp.service`（enabled） |
+| WARP endpoint | `188.114.96.1:500`（默认 `engage.cloudflareclient.com:2408` 被封，见 8.1 节） |
 | 出口 colo | LAX（洛杉矶，Cloudflare 边缘） |
 | Firefox profile | `~/snap/firefox/common/.mozilla/firefox/q9wwwobd.default/` |
 | Firefox user.js | 该 profile 目录下 `user.js` |
