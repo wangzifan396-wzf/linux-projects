@@ -27,6 +27,7 @@ paginate = 10
   disableAnchoredHeadings = false
   hideMeta = false
   hideSummary = false
+  comments = true
   DateFormat = '2006-01-02'
 
   [params.homeInfoParams]
@@ -34,9 +35,15 @@ paginate = 10
     Content = '''
 这里记录我在一台 **Linux 家用主机**上折腾的各种事情：零成本搭站、Cloudflare Tunnel、输入法、服务器配置，以及一切技术小实验。
 
-站点由 [Hugo](https://gohugo.io/) 生成静态页面，通过 [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/) 暴露到公网，零域名、零备案、零端口。
+站点由 [Hugo](https://gohugo.io/) 生成静态页面，通过 [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/) 暴露到公网——零域名、零备案、零端口。
 
 > 本机没有公网 IP，但通过 Cloudflare 边缘网络反向访问，所以你才能看到这个页面。
+
+<div class="hero-cta">
+<a class="button" href="/posts/">📚 浏览文章</a>
+<a class="button" href="/about/">👋 关于我</a>
+<a class="button" href="https://github.com/wangzifan396-wzf" target="_blank" rel="noopener">⭐ GitHub</a>
+</div>
 '''
 
   [params.assets]

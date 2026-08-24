@@ -45,4 +45,43 @@
         onScroll();
     }
 })();
+
+{{- /* === Mermaid 图表懒加载（仅当页面含 .mermaid 元素且接近视口时加载） === */ -}}
+(function () {
+    var mermaidEls = document.querySelectorAll('.mermaid');
+    if (mermaidEls.length === 0) return;
+
+    var loaded = false;
+    function loadMermaid() {
+        if (loaded) return;
+        loaded = true;
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js';
+        s.onload = function () {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+                || document.body.getAttribute('data-theme') === 'dark';
+            try {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: isDark ? 'dark' : 'default',
+                    securityLevel: 'loose',
+                    fontFamily: 'inherit'
+                });
+                mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+            } catch (e) { console.warn('mermaid render error:', e); }
+        };
+        document.head.appendChild(s);
+    }
+
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) { loadMermaid(); io.disconnect(); }
+            });
+        }, { rootMargin: '200px 0px' });
+        mermaidEls.forEach(function (el) { io.observe(el); });
+    } else {
+        loadMermaid();
+    }
+})();
 </script>

@@ -1,0 +1,24 @@
+{{- /* === 扩展 head：KaTeX 数学公式支持（按需加载，front matter 标 math: true 或用 {{< math >}} shortcode 触发） === */ -}}
+{{- $hasMath := or (.Page.HasShortcode "math") (.Param "math") -}}
+{{- if $hasMath -}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\\\[', right: '\\\\]', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\\\(', right: '\\\\)', display: false}
+        ],
+        throwOnError: false,
+        ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    });"></script>
+{{- end -}}
+
+{{- /* === SEO：Open Graph / Twitter Card 增强 === */ -}}
+{{- if .IsPage -}}
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+{{- with .Description -}}<meta property="og:description" content="{{ . }}">{{- end -}}
+{{- end -}}
