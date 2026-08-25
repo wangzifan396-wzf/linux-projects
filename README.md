@@ -56,6 +56,7 @@ hugo --minify
 
 | 日期 | 标题 | 关键词 |
 | --- | --- | --- |
+| 2026-08-25 | [GitHub Pages 自动部署：从临时隧道到固定 URL](content/posts/github-pages-deploy.md) | GitHub Pages, GitHub Actions, Hugo, CI/CD, 子路径 |
 | 2026-08-25 | [用 wireproxy + Cloudflare WARP 解决国内访问 GitHub 等外国网站不稳](content/posts/warp-wireproxy-proxy.md) | wireproxy, WARP, SOCKS5, 用户态 WireGuard |
 | 2026-08-25 | [在 Linux 上自托管 Gitea](content/posts/gitea-self-host.md) | Gitea, SQLite, Cloudflare Tunnel, systemd --user |
 | 2026-08-25 | [博客技术栈升级：KaTeX / Mermaid / Giscus 与首屏 Hero](content/posts/blog-stack-upgrade.md) | Hugo, PaperMod, KaTeX, Mermaid, Giscus |

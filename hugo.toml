@@ -12,7 +12,7 @@ summaryLength = 70
 paginate = 10
 
 [params]
-  description = '一台 Linux 家用主机上用 Hugo + Cloudflare Tunnel 搭起的个人技术博客'
+  description = '一台 Linux 家用主机上用 Hugo + GitHub Pages + Cloudflare Tunnel 搭起的个人技术博客'
   author = 'wzf'
   defaultTheme = 'auto'
   ShowReadingTime = true
