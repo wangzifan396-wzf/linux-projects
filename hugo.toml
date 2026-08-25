@@ -50,7 +50,7 @@ paginate = 10
 '''
 
   [params.assets]
-    favicon = '/favicon.ico'
+    favicon = 'favicon.ico'
 
   [[params.socialIcons]]
     name = 'github'
@@ -66,10 +66,10 @@ paginate = 10
     url = 'https://www.xiaoheihe.cn/community/45509815'
   [[params.socialIcons]]
     name = 'email'
-    url = 'mailto:you@example.com'
+    url = 'mailto:wangzifan396@gmail.com'
   [[params.socialIcons]]
     name = 'rss'
-    url = '/index.xml'
+    url = 'index.xml'
 
 [markup]
   [markup.highlight]
@@ -92,28 +92,30 @@ paginate = 10
   tag = 'tags'
   category = 'categories'
 
+# menu url 用相对路径（不以 / 开头），absLangURL 才会拼接 baseURL 子路径
+# 以 / 开头会被处理成 host-relative，丢掉 /linux-projects/ 子路径
 [[menu.main]]
   identifier = 'posts'
   name = '文章'
-  url = '/posts/'
+  url = 'posts/'
   weight = 10
 [[menu.main]]
   identifier = 'tags'
   name = '标签'
-  url = '/tags/'
+  url = 'tags/'
   weight = 20
 [[menu.main]]
   identifier = 'archives'
   name = '归档'
-  url = '/archives/'
+  url = 'archives/'
   weight = 30
 [[menu.main]]
   identifier = 'search'
   name = '搜索'
-  url = '/search/'
+  url = 'search/'
   weight = 40
 [[menu.main]]
   identifier = 'about'
   name = '关于'
-  url = '/about/'
+  url = 'about/'
   weight = 50
