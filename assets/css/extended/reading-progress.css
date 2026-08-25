@@ -1,0 +1,15 @@
+/* 阅读进度条：文章页顶部固定进度条，跟随 .post-content 滚动位置更新宽度 */
+.reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--link-color));
+    z-index: 1000;
+    width: 0;
+    transition: width 0.08s ease-out;
+    pointer-events: none;
+}
+@media (max-width: 768px) {
+    .reading-progress { height: 2px; }
+}

@@ -84,4 +84,31 @@
         loadMermaid();
     }
 })();
+
+{{- /* === 阅读进度条：仅文章页，跟随 .post-content 滚动位置 === */ -}}
+(function () {
+    var post = document.querySelector('.post-content');
+    if (!post) return; // 非文章页不显示
+    var bar = document.createElement('div');
+    bar.className = 'reading-progress';
+    document.body.appendChild(bar);
+    var ticking = false;
+    var onScroll = function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+            var rect = post.getBoundingClientRect();
+            var postTop = rect.top + window.scrollY;
+            var postHeight = rect.height - window.innerHeight;
+            var scrolled = window.scrollY - postTop;
+            var progress = postHeight > 0 ? scrolled / postHeight : 0;
+            progress = Math.max(0, Math.min(1, progress));
+            bar.style.width = (progress * 100) + '%';
+            ticking = false;
+        });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
+})();
 </script>
