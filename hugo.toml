@@ -33,6 +33,11 @@ paginate = 10
   comments = true
   DateFormat = '2006-01-02'
 
+  # 站点默认 OG 图：文章无 cover 无内嵌图时用作 og:image（分享到社交平台有预览图）
+  # PaperMod 内置 site.Params.images 数组作站点级 fallback（见 themes/PaperMod/_funcs/get-page-images.html 第 16-20 行）
+  # 注意：必须放在 [params.assets] 等子表之前，否则会被解析成 params.assets.images
+  images = ['og-default.jpg']
+
   [params.homeInfoParams]
     Title = '你好，欢迎来到我的博客 👋'
     Content = '''
