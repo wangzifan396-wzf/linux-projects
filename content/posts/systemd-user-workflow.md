@@ -1,6 +1,6 @@
 ---
 title: "systemd --user 工作流：家用 Linux 不给 sudo 也能让服务开机自启"
-date: 2026-08-25T13:50:00+08:00
+date: 2026-08-25T13:40:00+08:00
 draft: false
 tags: ["systemd", "Linux", "自托管", "服务管理"]
 categories: ["运维"]
