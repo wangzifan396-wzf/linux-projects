@@ -1,0 +1,75 @@
+# 构建 Hugo 站点并部署到 GitHub Pages
+# 触发：push 到 main 分支，或手动 workflow_dispatch
+# 前置：仓库 Settings → Pages → Source = "GitHub Actions"
+name: Deploy Hugo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/**'
+      - 'assets/**'
+      - 'layouts/**'
+      - 'archetypes/**'
+      - 'themes/**'
+      - 'hugo.toml'
+      - '.github/workflows/hugo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署，新的 push 取消正在跑的旧部署
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.165.0'
+          extended: true
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Hugo
+        env:
+          HUGO_ENV: production
+          HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
+          # 用 configure-pages 输出的 base_url 覆盖 hugo.toml，更 robust
+        run: |
+          hugo --minify --gc --baseURL "${{ steps.pages.outputs.base_url }}/"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

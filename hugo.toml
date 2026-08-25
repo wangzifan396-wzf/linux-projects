@@ -1,4 +1,7 @@
-baseURL = 'https://operations-washing-globe-capture.trycloudflare.com/'
+# 生产 baseURL = GitHub Pages 子路径（项目仓库，非 username.github.io）
+# 本机预览用 `hugo server --baseURL <local-or-tunnel-url>` 覆盖
+baseURL = 'https://wangzifan396-wzf.github.io/linux-projects/'
+canonifyURLs = true
 languageCode = 'zh-cn'
 title = '我的博客'
 defaultContentLanguage = 'zh'
