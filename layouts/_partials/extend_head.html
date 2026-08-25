@@ -1,9 +1,10 @@
-{{- /* === 扩展 head：KaTeX 数学公式支持（按需加载，front matter 标 math: true 或用 {{< math >}} shortcode 触发） === */ -}}
+{{- /* === 扩展 head：KaTeX 数学公式支持（本地托管，避免 jsdelivr 国内 30%+ 超时）==== */ -}}
+{{- /* 之前走 jsdelivr CDN，国内抽风导致公式不渲染；改成 static 本地托管，同源加载 + 浏览器缓存 */ -}}
 {{- $hasMath := or (.Page.HasShortcode "math") (.Param "math") -}}
 {{- if $hasMath -}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+<link rel="stylesheet" href="{{ "css/katex.min.css" | absURL }}">
+<script defer src="{{ "js/katex.min.js" | absURL }}"></script>
+<script defer src="{{ "js/auto-render.min.js" | absURL }}"
     onload="renderMathInElement(document.body, {
         delimiters: [
             {left: '$$', right: '$$', display: true},

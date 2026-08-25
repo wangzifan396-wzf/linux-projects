@@ -1,0 +1,14 @@
+User-agent: *
+{{- if hugo.IsProduction | or (eq site.Params.env "production") }}
+Disallow:
+{{- else }}
+Disallow: /
+{{- end }}
+
+# 屏蔽动态搜索页：没有固定内容，搜索引擎索引后用户点进是空搜索
+Disallow: /search/
+
+# 屏蔽 Hugo 调试/缓存内部路径
+Disallow: /index.json
+
+Sitemap: {{ "sitemap.xml" | absURL }}
