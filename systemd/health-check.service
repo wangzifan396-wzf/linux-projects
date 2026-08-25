@@ -1,0 +1,10 @@
+[Unit]
+Description=Lightweight health check (wireproxy/gitea/cloudflared + GitHub via WARP)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/wzf/Files/scripts/health-check.sh
+StandardOutput=journal
+StandardError=journal
+Nice=10

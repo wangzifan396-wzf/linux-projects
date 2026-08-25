@@ -1,0 +1,12 @@
+[Unit]
+Description=Run health check every 5 minutes
+
+[Timer]
+# 每 5 分钟跑一次（系统启动 1 分钟后开始，避免和开机服务抢资源）
+OnBootSec=1min
+OnUnitActiveSec=5min
+AccuracySec=10s
+Persistent=true
+
+[Install]
+WantedBy=default.target

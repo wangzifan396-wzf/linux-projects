@@ -1,0 +1,19 @@
+[Unit]
+Description=cloudflared quick tunnel (reverse proxy to local Hugo server on 127.0.0.1:1313)
+After=network-online.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/wzf/.local/bin/cloudflared tunnel --url http://localhost:1313
+WorkingDirectory=/home/wzf
+Restart=on-failure
+RestartSec=5
+# 单次失败最多重试 5 次避免死循环
+StartLimitIntervalSec=60
+StartLimitBurst=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

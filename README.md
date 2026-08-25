@@ -2,7 +2,13 @@
 
 > 一台 Linux 家用主机上折腾出来的全部笔记 —— Hugo 静态博客 + Cloudflare Tunnel 自托管 + wireproxy WARP 代理 + Gitea 私有 Git，零域名、零备案、零端口、零成本。
 
-本仓库既是**博客源码**（Hugo + PaperMod），也是**运维笔记**（`docs/` + `content/posts/`）。博客通过 GitHub Actions 自动构建并部署到 GitHub Pages，固定公网地址：
+本仓库是 **家用 Linux 自托管栈开源项目**，包含三部分：
+
+- **博客源码**（Hugo + PaperMod）—— GitHub Actions 自动构建部署到 GitHub Pages
+- **运维脚本**（`scripts/`）—— health-check.sh 等实际运行的脚本
+- **systemd 配置**（`systemd/`）—— 4 个 user 服务 unit 文件 + 1 个 timer
+
+博客固定公网地址：
 
 **https://wangzifan396-wzf.github.io/linux-projects/**
 
@@ -23,11 +29,35 @@ linux-projects/
 ├── layouts/
 │   ├── _partials/               # 覆盖 PaperMod 的 partial（comments/extend_head/extend_footer 等）
 │   └── _shortcodes/             # 自定义 shortcode（mermaid）
+├── scripts/                     # 实际运行的运维脚本
+│   ├── health-check.sh          # 健康检查脚本（systemd timer 每 5min 触发）
+│   └── README.md                # 脚本说明
+├── systemd/                     # systemd --user unit 文件
+│   ├── wireproxy-warp.service   # wireproxy WARP SOCKS5 代理
+│   ├── gitea.service            # Gitea 自托管 Git
+│   ├── cloudflared.service      # Cloudflare Tunnel 反代
+│   ├── health-check.service     # 健康检查 oneshot
+│   ├── health-check.timer       # 健康检查定时器（每 5min）
+│   └── README.md                # unit 文件说明 + 部署指南
 ├── themes/PaperMod/             # 主题（git submodule 形式或直接内嵌）
 ├── hugo.toml                    # Hugo 配置
+├── install.sh                   # 一键部署 scripts/ + systemd/（替换硬编码路径）
 ├── push.sh                      # 一键 commit + push（走 SSH，重试 5 次）
 └── .gitignore
 ```
+
+## 一键部署自托管栈
+
+在新机器上复刻这套自托管栈（不含 Hugo 博客本身，博客靠 GitHub Pages 部署）：
+
+```bash
+git clone git@github.com:wangzifan396-wzf/linux-projects.git
+cd linux-projects
+./install.sh --dry-run    # 先预览会做什么
+./install.sh              # 部署 scripts/ + systemd/ + enable + start
+```
+
+`install.sh` 会自动把 unit 文件里硬编码的 `/home/wzf/` 替换成当前 `$HOME`。前置条件见 `systemd/README.md`。
 
 ## 本地预览
 

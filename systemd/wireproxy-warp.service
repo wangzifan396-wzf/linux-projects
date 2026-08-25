@@ -1,0 +1,20 @@
+[Unit]
+Description=wireproxy (userspace WireGuard→Cloudflare WARP) local SOCKS5+HTTP proxy
+After=network-online.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/wzf/Files/proxy/wireproxy -c /home/wzf/Files/proxy/wireproxy.conf
+WorkingDirectory=/home/wzf/Files/proxy
+Restart=on-failure
+RestartSec=5
+# 让 wireproxy 失败后等 5s 重启，但单次失败最多重试 5 次避免死循环
+StartLimitIntervalSec=60
+StartLimitBurst=5
+# 日志走 journald --user
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

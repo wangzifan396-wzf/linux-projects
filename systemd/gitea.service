@@ -1,0 +1,20 @@
+[Unit]
+Description=Gitea self-hosted git server (userspace, SQLite, port 3000)
+After=network-online.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/wzf/Files/gitea/gitea web --config /home/wzf/Files/gitea/custom/conf/app.ini
+WorkingDirectory=/home/wzf/Files/gitea
+Environment=GITEA_WORK_DIR=/home/wzf/Files/gitea
+Environment=GITEA_CUSTOM=/home/wzf/Files/gitea/custom
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
