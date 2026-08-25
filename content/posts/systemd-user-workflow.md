@@ -278,25 +278,18 @@ graph TD
     L --> M[公网实时预览 URL]
 {{< /mermaid >}}
 
-## 九、现状与待办
+## 九、现状
 
-本机当前状态：
+本机当前状态（所有服务都已 systemd --user 化 + linger 已启用）：
 
 | 服务 | 管理方式 | 状态 |
 | --- | --- | --- |
 | wireproxy-warp | systemd --user | enabled + active ✓ |
 | gitea | systemd --user | enabled + active ✓ |
-| cloudflared | **nohup（待改进）** | active 但崩溃不重启、reboot 不自启 |
-| user linger | **未启用** | `Linger=no`，reboot 后需登录才跑 |
+| cloudflared | systemd --user | enabled + active ✓（已从 nohup 切换）|
+| user linger | 已启用 | `Linger=yes`，reboot 后不登录也跑 ✓ |
 
-待办（需要 sudo，执行一次即可）：
-
-```bash
-# 1. 启用 linger（让 reboot 后不登录也跑服务）
-sudo loginctl enable-linger $USER
-
-# 2. cloudflared 从 nohup 切换到 systemd（见第七节）
-```
+reboot 后三个服务都会自启，崩溃会自动重启（`Restart=on-failure` + `StartLimitBurst=5`）。从 nohup 切到 systemd 的命令见第七节。
 
 ## 十、设计取舍
 
