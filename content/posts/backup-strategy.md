@@ -1,6 +1,6 @@
 ---
 title: "家用 Linux 主机备份策略：rsync + systemd timer + 3-2-1 原则"
-date: 2026-08-25T21:00:00+08:00
+date: 2026-08-25T14:30:00+08:00
 draft: false
 tags: ["rsync", "备份", "systemd-timer", "Linux"]
 categories: ["运维"]
