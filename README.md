@@ -56,6 +56,7 @@ hugo --minify
 
 | 日期 | 标题 | 关键词 |
 | --- | --- | --- |
+| 2026-08-25 | [家用 Linux 自托管栈全景：12 篇文章串起的零成本体系](content/posts/self-hosted-stack-overview.md) | Linux, 自托管, 总结, systemd, Cloudflare, GitHub-Pages |
 | 2026-08-25 | [轻量健康检查：bash + systemd timer 监控家用 Linux 自托管服务](content/posts/health-check.md) | bash, systemd-timer, 监控, Linux, 自托管 |
 | 2026-08-25 | [GitHub SSH 规范工作流：ed25519 key + 443 端口绕封锁 + push.sh 自动重试](content/posts/ssh-workflow.md) | SSH, GitHub, ed25519, git, 运维 |
 | 2026-08-25 | [家用 Linux 主机备份策略：rsync + systemd timer + 3-2-1 原则](content/posts/backup-strategy.md) | rsync, 备份, systemd-timer, Linux, 3-2-1 |
