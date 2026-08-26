@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | `health-check.sh` | 检查 wireproxy/gitea/cloudflared + 外网连通性，记日志看趋势 | `health-check.timer` 每 5 分钟触发 |
 | `push.sh`（在仓库根目录） | 一键 `git add + commit + push` 走 SSH 443，重试 5 次应对 WARP 抖动 | 手动 `./push.sh "msg"` |
+| `ssh-hardening/apply.sh` | SSH 加固一键部署（sshd_config.d + fail2ban + ufw），默认 dry-run | 手动 `./apply.sh --dry-run` / `./apply.sh` |
 
 ## 部署
 
@@ -34,7 +35,26 @@
 - 重试 5 次 + 每次 sleep 2s，应对 SSH 抽风
 - 默认 commit 信息用当前时间，避免空 commit
 
+## ssh-hardening/ 设计要点
+
+家用 Linux SSH 加固 7 步的配置片段集合：
+
+```
+ssh-hardening/
+├── apply.sh                       # 一键部署脚本（默认 --dry-run）
+├── sshd_config.d/hardening.conf   # sshd 配置片段（Port 2222 + 9 类加固）
+└── fail2ban/jail.local             # fail2ban 配置覆盖（sshd jail + ufw banaction）
+```
+
+- **dry-run 优先**：`./apply.sh --dry-run` 先看 diff 不动配置
+- **sshd -t 语法检查**：部署前自动校验，配置错立刻回滚
+- **不主动 ufw enable**：避免把用户锁死，只 allow 新端口
+- **Ubuntu 24.04 适配**：fail2ban backend=systemd 读 journald，不是老教程的 /var/log/auth.log
+
+⚠️ 改动需要 sudo。改 sshd_config 前留一个 SSH 会话别退出。
+
 ## 相关博文
 
 - [轻量健康检查：bash + systemd timer 监控家用 Linux 自托管服务](../content/posts/health-check/)
 - [GitHub SSH 规范工作流：ed25519 key + 443 端口绕封锁 + push.sh 自动重试](../content/posts/ssh-workflow/)
+- [家用 Linux SSH 安全加固 7 步：从 22 端口裸奔到 fail2ban 自动封禁](../content/posts/ssh-hardening/)
