@@ -30,7 +30,7 @@ math: false
 
 - Linux 主机，已装 `curl`、`tar`、`git`、`python3`（用来改 ini）
 - 一个能访问 dl.gitea.com 或 GitHub releases 的网络（国内可能要镜像）
-- 已有 Cloudflare Tunnel 二进制（参见本博客 [Hugo 博客栈升级]({{< relref "/posts/blog-stack-upgrade" >}})）
+- 已有 Cloudflare Tunnel 二进制（参见本博客 [博客技术栈升级]({{< relref "/posts/blog-stack-upgrade" >}})）
 
 ---
 

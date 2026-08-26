@@ -126,7 +126,7 @@ hugo --minify
 | --- | --- | --- |
 | 静态生成 | Hugo extended + PaperMod | 构建快、单二进制、主题简洁可扩展 |
 | 数学公式 | KaTeX 0.16.11（按需加载） | 比 MathJax 轻、渲染快 |
-| 图表 | Mermaid 10.9.1（懒加载 + IntersectionObserver） | 纯文本描述图，比截图易维护 |
+| 图表 | Mermaid 10.9.1（按需加载 + 本地托管） | 纯文本描述图，比截图易维护 |
 | 评论 | Giscus（基于 GitHub Discussions） | 零后端、读者用 GitHub 账号登录 |
 | 公网入口 | Cloudflare Tunnel（quick tunnel）+ GitHub Pages | 前者本机实时预览，后者固定 URL |
 | 代理 | wireproxy + Cloudflare WARP | 用户态 WireGuard，不需要 root |

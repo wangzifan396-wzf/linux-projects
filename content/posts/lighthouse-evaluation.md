@@ -210,6 +210,6 @@ Lighthouse 跑分 90 是个性价比拐点：
 **比 Lighthouse 分数更重要的，是分稳定**。jsdelivr 本地化之前，同一 URL 两次跑 Lighthouse 差 20 分（一次 85 一次 65），用户体感也忽好忽坏。本地化之后分稳定 90+，这比冲到 95 但不稳定强得多。
 
 相关阅读：
-- [博客栈升级：Hugo + PaperMod + Mermaid + KaTeX + Giscus](/posts/blog-stack-upgrade/) —— 本地化 mermaid 和 KaTeX 的源头
+- [博客技术栈升级：给 PaperMod 加上 KaTeX / Mermaid / Giscus 与首屏 Hero](/posts/blog-stack-upgrade/) —— 本地化 mermaid 和 KaTeX 的源头
 - [家用 Linux 自托管栈全景](/posts/self-hosted-stack-overview/) —— 整体架构，GitHub Pages 作为内容层
 - [轻量健康检查](/posts/health-check/) —— 健康检查脚本监控 CDN 抖动

@@ -21,7 +21,7 @@ graph LR
     A[Markdown 正文] --> B[Hugo + Goldmark]
     B --> C{扩展点判断}
     C -->|front matter math:true| D[KaTeX auto-render]
-    C -->|mermaid shortcode 调用| E[Mermaid.js 懒加载]
+    C -->|mermaid shortcode 调用| E[Mermaid.js 按需加载]
     C -->|single.html comments 参数| F[Giscus iframe]
     D --> G[渲染后 HTML]
     E --> G
@@ -46,9 +46,9 @@ graph LR
 ```go-html-template
 {{- $hasMath := or (.Page.HasShortcode "math") (.Param "math") -}}
 {{- if $hasMath -}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+<link rel="stylesheet" href="{{ "css/katex.min.css" | absURL }}">
+<script defer src="{{ "js/katex.min.js" | absURL }}"></script>
+<script defer src="{{ "js/auto-render.min.js" | absURL }}"
     onload="renderMathInElement(document.body, {
         delimiters: [
             {left: '$$', right: '$$', display: true},
@@ -98,18 +98,26 @@ $$
 </div>
 ```
 
-然后在 `extend_footer.html` 里加懒加载逻辑——只有页面含 `.mermaid` 元素且接近视口时，才动态注入 mermaid.js：
+然后在 `extend_footer.html` 里直接加载 mermaid.js——页面含 `.mermaid` 元素就动态注入脚本，`onload` 后调用 `mermaid.run` 渲染：
 
 ```js
 var mermaidEls = document.querySelectorAll('.mermaid');
 if (mermaidEls.length === 0) return;  // 无图直接返回，不加载 2MB 脚本
 
-var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-        if (e.isIntersecting) { loadMermaid(); io.disconnect(); }
+var s = document.createElement('script');
+s.src = '{{ "js/mermaid.min.js" | absURL }}';
+s.onload = function () {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+        || document.body.getAttribute('data-theme') === 'dark';
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'inherit'
     });
-}, { rootMargin: '200px 0px' });
-mermaidEls.forEach(function (el) { io.observe(el); });
+    mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+};
+document.head.appendChild(s);
 ```
 
 用法：在 Markdown 里调用 mermaid shortcode，闭合标签之间写 Mermaid 语法（`graph TD`、`sequenceDiagram` 等）。shortcode 包裹的内容会原样传给 Mermaid 渲染成图。
@@ -139,7 +147,7 @@ sequenceDiagram
     G->>U: 更新 refs/main 成功
 {{< /mermaid >}}
 
-> 选型说明：mermaid.js 体积 ~2MB，懒加载是必须的。`IntersectionObserver` 让图在接近视口时才加载，首屏零成本。
+> 选型说明：mermaid.js 体积 ~2MB（gzip 212KB），按页加载——只有含 `.mermaid` 的文章才注入脚本。**不用 IntersectionObserver 懒加载**：headless 浏览器和部分真机不触发 IO，`.mermaid` 会停留在源码文本状态；直接加载 + `onload` 渲染更稳，212KB 缓存后二次访问无感。
 
 ## 四、Giscus 评论
 
@@ -223,7 +231,7 @@ curl -X POST -H "Authorization: token $PAT" \
 | 项 | 状态 |
 | --- | --- |
 | KaTeX 数学公式（按需加载） | ✅ |
-| Mermaid 图表（懒加载 + 暗色适配） | ✅ |
+| Mermaid 图表（按需加载 + 暗色适配） | ✅ |
 | Giscus 评论（ Discussions + 主题同步） | ✅ 配置就绪，待装 App |
 | 首屏 Hero CTA + 渐变标题 | ✅ |
 | 移动端响应式（768/420 断点） | ✅ |
@@ -234,7 +242,7 @@ curl -X POST -H "Authorization: token $PAT" \
 
 1. **按需加载优先**：KaTeX / Mermaid 都不是全局加载，单篇文章 front matter 控制，零负担。
 2. **扩展点不动主题**：所有改动都在 `layouts/_partials/` 和 `layouts/_shortcodes/`，主题本身零修改，升级主题不丢功能。
-3. **CDN 用 jsdelivr**：国内相对稳；后续可换成本地资源或 Cloudflare Pages 托管，进一步可控。
+3. **静态资源本地托管**：mermaid + KaTeX + 字体全放 `static/`，同源加载 + 浏览器缓存；jsdelivr 国内 30%+ 超时率已弃用。
 4. **评论走 GitHub**：读者用 GitHub 账号登录评论，无需再搭后端，跟"零成本"主线一致。
 
 下一篇会写 **SSH 规范工作流**（已经配好并测通），把 `git push` 从 PAT-in-URL 升级到 ed25519 + 443 端口的标准姿势。
