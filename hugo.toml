@@ -2,7 +2,7 @@
 # 本机预览用 `hugo server --baseURL <local-or-tunnel-url>` 覆盖
 baseURL = 'https://wangzifan396-wzf.github.io/linux-projects/'
 canonifyURLs = true
-languageCode = 'zh-cn'
+locale = 'zh-cn'
 title = '我的博客'
 defaultContentLanguage = 'zh'
 theme = 'PaperMod'

@@ -317,7 +317,7 @@ systemd --user timer 跑的时候**用户 session 的挂载点必须存在**。�
 ## 十、设计取舍
 
 1. **rsync 而非 restic/borg**：家用几 GB 数据，rsync + hardlink 已经够用，备份目录可直接 `ls`/`cp` 恢复，零工具依赖。数据量大或需要去重时再上 restic。
-2. **systemd --user timer 而非 cron**：和现有 wireproxy/gitea/cloudflared 一套体系，日志走 `journalctl --user`，状态走 `systemctl --user status`，统一管理。
+2. **systemd --user timer 而非 [cron](/posts/cron-vs-systemd-timer/)**:和现有 wireproxy/gitea/cloudflared 一套体系，日志走 `journalctl --user`，状态走 `systemctl --user status`，统一管理。
 3. **ExecCondition 检查盘**：外接盘可能没插，用 `ExecCondition` 检查挂载点存在时安静跳过，避免每次 timer 触发都失败告警。
 4. **14 天滚动而非永久保留**：家用场景发现误删一般几天内就察觉，14 天足够；想要更长保留把 `-mtime +14` 改大。
 5. **每季度恢复演练**：备份没验证等于没备份——专门花时间把数据 restore 到另一台机器跑通服务，才算真备份。

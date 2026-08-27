@@ -89,7 +89,7 @@ hugo --minify
 | 2026-08-26 | [静态站点性能评测实战：用 performance API 给本博客做 Lighthouse 自检](content/posts/lighthouse-evaluation.md) | Lighthouse, 性能, SEO, Hugo, Core-Web-Vitals |
 | 2026-08-26 | [家用 Linux SSH 安全加固 7 步：从 22 端口裸奔到 fail2ban 自动封禁](content/posts/ssh-hardening.md) | SSH, 安全, fail2ban, sshd_config, Linux, 运维 |
 | 2026-08-26 | [cron vs systemd timer：家用 Linux 定时任务选哪个？（附迁移实战 diff）](content/posts/cron-vs-systemd-timer.md) | cron, systemd-timer, Linux, 运维, 对比 |
-| 2026-08-25 | [家用 Linux 自托管栈全景：12 篇文章串起的零成本体系](content/posts/self-hosted-stack-overview.md) | Linux, 自托管, 总结, systemd, Cloudflare, GitHub-Pages |
+| 2026-08-25 | [家用 Linux 自托管栈全景：16 篇文章串起的零成本体系](content/posts/self-hosted-stack-overview.md) | Linux, 自托管, 总结, systemd, Cloudflare, GitHub-Pages |
 | 2026-08-25 | [轻量健康检查：bash + systemd timer 监控家用 Linux 自托管服务](content/posts/health-check.md) | bash, systemd-timer, 监控, Linux, 自托管 |
 | 2026-08-25 | [GitHub SSH 规范工作流：ed25519 key + 443 端口绕封锁 + push.sh 自动重试](content/posts/ssh-workflow.md) | SSH, GitHub, ed25519, git, 运维 |
 | 2026-08-25 | [家用 Linux 主机备份策略：rsync + systemd timer + 3-2-1 原则](content/posts/backup-strategy.md) | rsync, 备份, systemd-timer, Linux, 3-2-1 |

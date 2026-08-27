@@ -1,15 +1,15 @@
 ---
-title: "家用 Linux 自托管栈全景：12 篇文章串起的零成本体系"
+title: "家用 Linux 自托管栈全景：16 篇文章串起的零成本体系"
 date: 2026-08-25T19:30:00+08:00
 draft: false
 tags: ["Linux", "自托管", "总结", "systemd", "Cloudflare", "GitHub-Pages"]
 categories: ["总结"]
-summary: "过去几天在一台 Ubuntu 家用主机上折腾出了一整套自托管栈：Cloudflare Tunnel 公网入口、GitHub Pages 固定博客、WARP 代理、Gitea 私有 Git、systemd --user 服务管理、rsync 备份、bash 健康检查。12 篇文章分散写完容易忘了整体，这篇用一张大架构图把它们串起来，记录四个'零'设计哲学、分层取舍和踩坑沉淀。"
+summary: "过去几天在一台 Ubuntu 家用主机上折腾出了一整套自托管栈：Cloudflare Tunnel 公网入口、GitHub Pages 固定博客、WARP 代理、Gitea 私有 Git、systemd --user 服务管理、rsync 备份、bash 健康检查。16 篇文章分散写完容易忘了整体，这篇用一张大架构图把它们串起来，记录四个'零'设计哲学、分层取舍和踩坑沉淀。"
 ---
 
-过去几天我在一台 Ubuntu 24.04 家用主机上折腾出了一整套自托管栈。从最早"用 Cloudflare Tunnel 把 Hugo 暴露到公网"开始，一路写到 WARP 代理、Gitea 私有 Git、GitHub Pages 部署、systemd --user 服务管理、rsync 备份、bash 健康检查……零零散散 12 篇。
+过去几天我在一台 Ubuntu 24.04 家用主机上折腾出了一整套自托管栈。从最早"用 Cloudflare Tunnel 把 Hugo 暴露到公网"开始，一路写到 WARP 代理、Gitea 私有 Git、GitHub Pages 部署、systemd --user 服务管理、rsync 备份、bash 健康检查……零零散散 16 篇。
 
-写多了容易忘整体。这篇是总结，用一张大架构图把 12 篇串起来，回答一个问题：**家用主机到底是怎么变成一个对外可见、自我运维、零成本运行的栈的？**
+写多了容易忘整体。这篇是总结，用一张大架构图把 16 篇串起来，回答一个问题：**家用主机到底是怎么变成一个对外可见、自我运维、零成本运行的栈的？**
 
 如果你是第一次来，建议先看这篇找方向，再按需要跳到具体某一篇。
 
@@ -174,7 +174,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 
 ## 五、踩坑沉淀
 
-12 篇文章里散落着不少坑，集中记一遍最关键的 5 条，避免重蹈：
+16 篇文章里散落着不少坑，集中记一遍最关键的 5 条，避免重蹈：
 
 1. **Hugo 文章 `date` 不能设未来时间**。Hugo 默认跳过 future-dated 文章，会导致 GitHub Pages 上 404 但本地构建无报错。判断当前时间用 `date` 命令，不要看 IDE 或 memory 时间戳（往往是最后写入时间，可能是未来）。详见 [GitHub Pages 部署](/posts/github-pages-deploy/)。
 2. **TOML 子表吞 key**。hugo.toml 里 `images = ['og-default.jpg']` 必须放在 `[params]` 段下、`[params.assets]` 等任何子表之前，否则会被解析成 `params.assets.images` 静默失败，OG 图 meta 不输出。
@@ -188,7 +188,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 
 - **配置版本化**：`~/Files/scripts/` 和 `~/.config/systemd/user/` 目前没进版本控制，整理成独立 dotfiles 仓库开源，方便迁移和回滚。
 - **SEO 与性能**：sitemap 已生成但没主动提交到搜索引擎；robots.txt 可优化；图片可加 `loading="lazy"` 和 `width/height` 防 CLS。
-- **更多运维博文**：cron vs systemd timer 对比、SSH 安全加固（fail2ban、密钥 passphrase）、静态站点评测工具（Lighthouse / PageSpeed）。
+- **更多运维博文**：[cron vs systemd timer 对比](/posts/cron-vs-systemd-timer/)、SSH 安全加固（fail2ban、密钥 passphrase）、静态站点评测工具（[Lighthouse](/posts/lighthouse-evaluation/) / PageSpeed）。
 - **正式域名**：等哪天觉得 `wangzifan396-wzf.github.io/linux-projects/` 太长，可以买个短域名 CNAME 到 GitHub Pages，但目前免费子域够用。
 
 ## 七、整体部署流程图
@@ -217,7 +217,7 @@ flowchart LR
 
 ## 尾巴
 
-这套栈不是一天搭起来的，是 12 篇文章逐步长出来的。最早只想"用 Cloudflare Tunnel 把 Hugo 暴露到公网"，写着写着发现国内访问 GitHub 抽风得先解决代理，代理解决了发现 push 还得绕 443 端口，推上去了发现 Pages 子路径会让主题链接失效，链接修好了发现没监控不踏实，监控跑起来发现没备份不放心……每一步都是上一步逼出来的。
+这套栈不是一天搭起来的，是 16 篇文章逐步长出来的。最早只想"用 Cloudflare Tunnel 把 Hugo 暴露到公网"，写着写着发现国内访问 GitHub 抽风得先解决代理，代理解决了发现 push 还得绕 443 端口，推上去了发现 Pages 子路径会让主题链接失效，链接修好了发现没监控不踏实，监控跑起来发现没备份不放心……每一步都是上一步逼出来的。
 
 这是工程的真实样子：**不是一开始设计好架构，而是遇到一个解决一个，最后回头看才发现自己搭出了一个栈**。写这篇总结的时候我才第一次把所有零件摆在一起看，发现居然挺整齐——四个"零"贯穿每一层，systemd --user 一套体系管所有服务，bash 脚本接住所有运维缺口。这不是巧合，是约束倒逼出来的：家用、没钱、没公网 IP、不想给 root，能用的工具就那几个，反而促成了连贯的设计。
 
