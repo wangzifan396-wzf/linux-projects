@@ -203,7 +203,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 栈跑起来了，但还有几件事可以做：
 
 - **Tailscale 私有访问层（已落地）**：见 [用 Tailscale 把家机变成随身私密网](/posts/tailscale-private-mesh/)。家机现已能从任意授权设备安全访问，Gitea 公网端口可收口。
-- **配置版本化**：`~/Files/scripts/` 和 `~/.config/systemd/user/` 目前没进版本控制，整理成独立 dotfiles 仓库开源，方便迁移和回滚。
+- **配置版本化（已基本完成）**：`scripts/` 与 `systemd/` 已在本仓库版本控制（含 health-check 的告警环境变量模板）；若想让家机 `~/Files/scripts/` 与仓库实时同步，把两者符号链接起来即可，迁移 / 回滚直接用 git。
 - **SEO 与性能**：sitemap 已生成但没主动提交到搜索引擎；robots.txt 可优化；图片可加 `loading="lazy"` 和 `width/height` 防 CLS。静态站点性能评测见 [Lighthouse 实战](/posts/lighthouse-evaluation/)。
 - **真正自托管的服务**：隐私统计 Umami、密码库 Vaultwarden——完全自托管、数据归己，顺延"本地托管"洁癖。这些需要家机起服务 + Tunnel 暴露，尚未实施。
 - **正式域名**：等哪天觉得 `wangzifan396-wzf.github.io/linux-projects/` 太长，可以买个短域名 CNAME 到 GitHub Pages，但目前免费子域够用。

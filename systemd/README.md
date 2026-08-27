@@ -1,16 +1,34 @@
 # systemd --user unit 文件
 
-这个目录收录家用 Linux 自托管栈全部 4 个 systemd --user 服务（1 个 oneshot + 1 个 timer + 3 个 simple 长驻）的 unit 文件。
+这个目录收录家用 Linux 自托管栈的 systemd --user 服务 unit 文件（目前 4 个服务：1 个 oneshot + 1 个 timer + 3 个 simple 长驻；Tailscale 的 `tailscaled` 是系统服务，不在此列）。
 
 ## 服务清单
 
 | unit 文件 | 类型 | 作用 | 依赖 |
 | --- | --- | --- | --- |
 | `wireproxy-warp.service` | simple 长驻 | wireproxy 把 Cloudflare WARP 跑成用户态 SOCKS5 代理（127.0.0.1:1080） | `~/Files/proxy/wireproxy` + `wireproxy.conf` |
-| `gitea.service` | simple 长驻 | Gitea 自托管 Git 服务（127.0.0.1:3000，SQLite 后端） | `~/Files/gitea/gitea` + `app.ini` |
-| `cloudflared.service` | simple 长驻 | cloudflared quick tunnel 反代本地 Hugo server（127.0.0.1:1313 → 公网 HTTPS） | `~/.local/bin/cloudflared` + hugo server 在跑 |
-| `health-check.service` | oneshot | 跑 `~/Files/scripts/health-check.sh`，检查上面 3 个服务 + 外网连通性 | `~/Files/scripts/health-check.sh` |
+| `gitea.service` | simple 长驻 | Gitea 自托管 Git 服务（**0.0.0.0:3000**，SQLite 后端，绑全网卡以便 Tailscale / 局域网访问） | `~/Files/gitea/gitea` + `app.ini` |
+| `cloudflared.service` | simple 长驻 | cloudflared quick tunnel 反代本地 Hugo server（127.0.0.1:1313 → 公网 HTTPS，仅博客预览，不暴露 Gitea） | `~/.local/bin/cloudflared` + hugo server 在跑 |
+| `health-check.service` | oneshot | 跑 `~/Files/scripts/health-check.sh`，检查上面 3 个服务 + 外网连通性；可选 Telegram / Webhook 告警 | `~/Files/scripts/health-check.sh` + 可选 `~/.config/health-check.env` |
 | `health-check.timer` | timer | 每 5 分钟触发 `health-check.service` | `health-check.service` |
+
+## 健康检查告警通知（可选）
+
+`health-check.sh` 内置 Telegram / Webhook 通知钩子，由环境变量激活，`health-check.service` 已通过 `EnvironmentFile=-%h/.config/health-check.env` 接入。
+
+```bash
+# 1. 复制模板
+cp systemd/health-check.env.example ~/.config/health-check.env
+# 2. 编辑填入真实值
+vim ~/.config/health-check.env
+#    TG_BOT_TOKEN=...   TG_CHAT_ID=...   （可选 TG_PROXY=socks5://127.0.0.1:1080）
+#    或 NOTIFY_WEBHOOK=https://hooks.example.com/xxx
+# 3. 重新加载让 EnvironmentFile 生效
+systemctl --user daemon-reload
+systemctl --user restart health-check
+```
+
+未设置任何通知变量时，脚本静默只写日志，绝不误报。详见 [轻量健康检查](../content/posts/health-check/)。
 
 ## 部署
 
@@ -70,9 +88,11 @@ tail -f ~/Files/monitor/health.log
 - `StandardOutput=journal` + `StandardError=journal`：日志走 journald，用 `journalctl --user -u xxx` 查
 - `WantedBy=default.target`：enable 后开机自启
 - 依赖 `network-online.target`：等网络就绪再起，避免 wireproxy/cloudflared 启动时没网导致首次失败
+- `health-check.service` 用 `EnvironmentFile=-%h/.config/health-check.env` 注入告警变量，`-` 前缀保证文件缺失也不影响健康检查本身
 
 ## 相关博文
 
 - [systemd --user 工作流：家用 Linux 不给 sudo 也能让服务开机自启](../content/posts/systemd-user-workflow/)
 - [轻量健康检查：bash + systemd timer 监控家用 Linux 自托管服务](../content/posts/health-check/)
-- [家用 Linux 自托管栈全景：12 篇文章串起的零成本体系](../content/posts/self-hosted-stack-overview/)
+- [用 Tailscale 把家机变成随身可访问的私密网](../content/posts/tailscale-private-mesh/)
+- [家用 Linux 自托管栈全景：18 篇文章串起的零成本体系](../content/posts/self-hosted-stack-overview/)

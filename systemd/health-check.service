@@ -4,6 +4,9 @@ After=network-online.target
 
 [Service]
 Type=oneshot
+# 告警通知环境变量（可选）：放 TG_BOT_TOKEN / TG_CHAT_ID / TG_PROXY / NOTIFY_WEBHOOK
+# 文件不存在也不影响健康检查本身（- 前缀表示可缺省）
+EnvironmentFile=-%h/.config/health-check.env
 ExecStart=/home/wzf/Files/scripts/health-check.sh
 StandardOutput=journal
 StandardError=journal
