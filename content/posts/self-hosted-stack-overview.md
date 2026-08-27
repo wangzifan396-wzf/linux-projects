@@ -1,15 +1,15 @@
 ---
-title: "家用 Linux 自托管栈全景：16 篇文章串起的零成本体系"
+title: "家用 Linux 自托管栈全景：18 篇文章串起的零成本体系"
 date: 2026-08-25T19:30:00+08:00
 draft: false
 tags: ["Linux", "自托管", "总结", "systemd", "Cloudflare", "GitHub-Pages"]
 categories: ["总结"]
-summary: "过去几天在一台 Ubuntu 家用主机上折腾出了一整套自托管栈：Cloudflare Tunnel 公网入口、GitHub Pages 固定博客、WARP 代理、Gitea 私有 Git、systemd --user 服务管理、rsync 备份、bash 健康检查。16 篇文章分散写完容易忘了整体，这篇用一张大架构图把它们串起来，记录四个'零'设计哲学、分层取舍和踩坑沉淀。"
+summary: "过去几天在一台 Ubuntu 家用主机上折腾出了一整套自托管栈：Cloudflare Tunnel 公网入口、GitHub Pages 固定博客、WARP 代理、Gitea 私有 Git、Tailscale 私有访问、systemd --user 服务管理、rsync 备份、bash 健康检查。18 篇文章分散写完容易忘了整体，这篇用一张大架构图把它们串起来，记录四个'零'设计哲学、分层取舍和踩坑沉淀。"
 ---
 
-过去几天我在一台 Ubuntu 24.04 家用主机上折腾出了一整套自托管栈。从最早"用 Cloudflare Tunnel 把 Hugo 暴露到公网"开始，一路写到 WARP 代理、Gitea 私有 Git、GitHub Pages 部署、systemd --user 服务管理、rsync 备份、bash 健康检查……零零散散 16 篇。
+过去几天我在一台 Ubuntu 24.04 家用主机上折腾出了一整套自托管栈。从最早"用 Cloudflare Tunnel 把 Hugo 暴露到公网"开始，一路写到 WARP 代理、Gitea 私有 Git、GitHub Pages 部署、Tailscale 私有访问、systemd --user 服务管理、rsync 备份、bash 健康检查……零零散散 18 篇。
 
-写多了容易忘整体。这篇是总结，用一张大架构图把 16 篇串起来，回答一个问题：**家用主机到底是怎么变成一个对外可见、自我运维、零成本运行的栈的？**
+写多了容易忘整体。这篇是总结，用一张大架构图把 18 篇串起来，回答一个问题：**家用主机到底是怎么变成一个对外可见、自我运维、零成本运行的栈的？**
 
 如果你是第一次来，建议先看这篇找方向，再按需要跳到具体某一篇。
 
@@ -28,12 +28,12 @@ summary: "过去几天在一台 Ubuntu 家用主机上折腾出了一整套自�
 
 ## 二、整体架构图
 
-下面这张图是整栈的全景。家用 Linux 主机在最中间，左边是用户访问路径，右边是部署路径，上面是 systemd 服务层，下面是运维保障层。
+下面这张图是整栈的全景。家用 Linux 主机在最中间，左边是用户访问路径，右边是部署路径，上面是 systemd 服务层，下面是运维保障层。中间多了一条 **Tailscale 私有访问路径**——只让自己设备进家机，不开任何公网端口。
 
 {{< mermaid >}}
 flowchart TB
     subgraph User["👤 用户"]
-        Browser["Firefox / Git 客户端"]
+        Browser["Firefox / Git 客户端 / Tailscale 客户端"]
     end
 
     subgraph Host["🏠 家用 Linux 主机<br/>Ubuntu 24.04 + GNOME/Wayland"]
@@ -44,6 +44,7 @@ flowchart TB
             CF["cloudflared<br/>反代 :1313"]
             HC["health-check.timer<br/>每 5min"]
         end
+        TSd["tailscaled<br/>WireGuard 系统服务"]
         Scripts["~/Files/scripts/<br/>push.sh / health-check.sh"]
         BK["备份盘 rsync"]
     end
@@ -51,6 +52,10 @@ flowchart TB
     subgraph CFnet["☁️ Cloudflare 边缘"]
         WARP["WARP endpoint"]
         Tun["Quick Tunnel HTTPS"]
+    end
+
+    subgraph TS["🔒 Tailscale 虚拟网<br/>WireGuard P2P 直连"]
+        Mesh["手机 / 笔记本 / 家机<br/>100.x.x.x"]
     end
 
     subgraph GH["🐙 GitHub"]
@@ -67,6 +72,10 @@ flowchart TB
 
     Hugo --> CF --> Tun
     Tun -.->|"临时公网入口<br/>URL 每次重启变"| Browser
+
+    Browser -->|"Tailscale 私有访问<br/>仅授权设备"| TS
+    TS -->|"MagicDNS"| TSd
+    TSd --> G
 
     Hugo -->|"push.sh 一键部署"| Repo --> Act --> Pg
     Pg -.->|"固定 URL 分享"| Browser
@@ -85,16 +94,19 @@ flowchart TB
     style GH fill:#fff3e0,stroke:#e65100
     style Ext fill:#fce4ec,stroke:#ad1457
     style User fill:#f3e5f5,stroke:#6a1b9a
+    style TS fill:#e0f7fa,stroke:#006064
+    style TSd fill:#e0f7fa,stroke:#006064
 {{< /mermaid >}}
 
-看图说话，整栈有 **两条对外路径** 和 **一条对内保障路径**：
+看图说话，整栈有 **两条对外路径**、**一条对内保障路径**，以及新增的 **Tailscale 私有访问路径**：
 
 - **路径 A（用户访问站点）**：用户 → Cloudflare 边缘 → cloudflared 出站反代 → 本地 Hugo :1313。这条是"临时公网入口"，URL 每次重启 cloudflared 都变，适合调试和分享给少数人。
 - **路径 B（用户访问正式博客）**：用户 → GitHub Pages 固定 URL → Actions 自动构建的静态站点。这条是"正式入口"，URL 永远不变，是最终分享给外界的地址。
 - **路径 C（用户访问外部）**：用户 → SOCKS5 :1080 → wireproxy → WARP 边缘 → GitHub/Google/Wikipedia。解决国内访问抽风。
+- **路径 D（私有访问家机）**：用户设备 → Tailscale 虚拟网（WireGuard P2P 加密）→ tailscaled → Gitea / SSH。这条是"私密入口"，只有你授权的设备进得去，**不开任何公网端口**，可替代 Cloudflare Tunnel 暴露 Gitea。
 - **对内保障**：health-check.timer 每 5 分钟 curl 一遍服务真实可用性记日志；rsync 每天 03:00 增量备份到外接盘。
 
-这四条路径下面分层展开。
+这五条路径下面分层展开。
 
 ## 三、分层串讲
 
@@ -135,7 +147,9 @@ GitHub 在国内访问抽风——22 端口常被封、HTTPS 时好时坏。两�
 | `cloudflared` | 反代 1313 | 公网隧道到本地 Hugo |
 | `health-check.timer` | — | 每 5min 健康检查 |
 
-Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)，讲为什么不用 GitHub 付费 private repo、Gitea 怎么以 user 服务跑、SQLite 后端够用、怎么用 cloudflared 暴露到公网。
+此外 `tailscaled` 以**系统服务**常驻（不在 user 服务层），提供 Tailscale 私有访问；Gitea 现在同时能从 Cloudflare Tunnel（公开）和 Tailscale（私有）两个入口访问，推荐私密管理走 Tailscale、对外分享才走 Tunnel。
+
+Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)，讲为什么不用 GitHub 付费 private repo、Gitea 怎么以 user 服务跑、SQLite 后端够用、怎么用 cloudflared 暴露到公网。Tailscale 那层见 [用 Tailscale 把家机变成随身私密网](/posts/tailscale-private-mesh/)。
 
 ### 4. 内容层：Hugo + PaperMod
 
@@ -152,6 +166,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 - WARP 抖动 ~30%（单次 curl 经常超时），脚本重试 3 次后误报率降到 ~3%
 - 状态机记 `fail_streak`，连续失败 N 次才告警，避免抖动误报
 - 日志 1000 行轮转，~3.5 天历史趋势可查
+- 已预留 Telegram / Webhook 通知钩子（`TG_BOT_TOKEN` + `TG_CHAT_ID` 即生效），服务真挂了能主动推到手机
 
 **备份**用 rsync `--link-dest` 做增量 + systemd --user timer 每日 03:00 + 3-2-1 原则（3 份副本、2 种介质、1 份离线）。含可恢复性验证（备份不复原等于没备份）。详见 [家用 Linux 主机备份策略](/posts/backup-strategy/)。
 
@@ -166,6 +181,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 | 代理 | wireproxy + WARP | 商业 VPN / 自建 SS | 零成本 + Cloudflare 背书 + 用户态不用 root |
 | 服务管理 | systemd --user | docker-compose | 不用 root、不用 daemon、镜像维护负担 |
 | 私有 Git | Gitea + SQLite | GitHub 付费 private | 零成本 + 数据完全本地 + 资源占用低 |
+| 私有访问 | Tailscale | 路由器端口转发 / 商业 VPN | 只让自己设备进、不暴露端口、免端口转发 |
 | 监控 | bash + systemd timer | uptime-kuma | 零依赖、零 Web UI、和现有架构同体系 |
 | 备份 | rsync --link-dest | restic / borg | 系统自带、增量硬链接省空间、调试透明 |
 | 推送通道 | SSH 443 + push.sh 重试 | HTTPS + PAT | 22 端口常被封、443 走 HTTPS 几乎不被封 |
@@ -174,7 +190,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 
 ## 五、踩坑沉淀
 
-16 篇文章里散落着不少坑，集中记一遍最关键的 5 条，避免重蹈：
+18 篇文章里散落着不少坑，集中记一遍最关键的 5 条，避免重蹈：
 
 1. **Hugo 文章 `date` 不能设未来时间**。Hugo 默认跳过 future-dated 文章，会导致 GitHub Pages 上 404 但本地构建无报错。判断当前时间用 `date` 命令，不要看 IDE 或 memory 时间戳（往往是最后写入时间，可能是未来）。详见 [GitHub Pages 部署](/posts/github-pages-deploy/)。
 2. **TOML 子表吞 key**。hugo.toml 里 `images = ['og-default.jpg']` 必须放在 `[params]` 段下、`[params.assets]` 等任何子表之前，否则会被解析成 `params.assets.images` 静默失败，OG 图 meta 不输出。
@@ -186,9 +202,10 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 
 栈跑起来了，但还有几件事可以做：
 
+- **Tailscale 私有访问层（已落地）**：见 [用 Tailscale 把家机变成随身私密网](/posts/tailscale-private-mesh/)。家机现已能从任意授权设备安全访问，Gitea 公网端口可收口。
 - **配置版本化**：`~/Files/scripts/` 和 `~/.config/systemd/user/` 目前没进版本控制，整理成独立 dotfiles 仓库开源，方便迁移和回滚。
-- **SEO 与性能**：sitemap 已生成但没主动提交到搜索引擎；robots.txt 可优化；图片可加 `loading="lazy"` 和 `width/height` 防 CLS。
-- **更多运维博文**：[cron vs systemd timer 对比](/posts/cron-vs-systemd-timer/)、SSH 安全加固（fail2ban、密钥 passphrase）、静态站点评测工具（[Lighthouse](/posts/lighthouse-evaluation/) / PageSpeed）、[博客自动化巡检 CI](/posts/blog-ci-automation/)。
+- **SEO 与性能**：sitemap 已生成但没主动提交到搜索引擎；robots.txt 可优化；图片可加 `loading="lazy"` 和 `width/height` 防 CLS。静态站点性能评测见 [Lighthouse 实战](/posts/lighthouse-evaluation/)。
+- **真正自托管的服务**：隐私统计 Umami、密码库 Vaultwarden——完全自托管、数据归己，顺延"本地托管"洁癖。这些需要家机起服务 + Tunnel 暴露，尚未实施。
 - **正式域名**：等哪天觉得 `wangzifan396-wzf.github.io/linux-projects/` 太长，可以买个短域名 CNAME 到 GitHub Pages，但目前免费子域够用。
 
 ## 七、整体部署流程图
@@ -217,9 +234,9 @@ flowchart LR
 
 ## 尾巴
 
-这套栈不是一天搭起来的，是 16 篇文章逐步长出来的。最早只想"用 Cloudflare Tunnel 把 Hugo 暴露到公网"，写着写着发现国内访问 GitHub 抽风得先解决代理，代理解决了发现 push 还得绕 443 端口，推上去了发现 Pages 子路径会让主题链接失效，链接修好了发现没监控不踏实，监控跑起来发现没备份不放心……每一步都是上一步逼出来的。
+这套栈不是一天搭起来的，是 18 篇文章逐步长出来的。最早只想"用 Cloudflare Tunnel 把 Hugo 暴露到公网"，写着写着发现国内访问 GitHub 抽风得先解决代理，代理解决了发现 push 还得绕 443 端口，推上去了发现 Pages 子路径会让主题链接失效，链接修好了发现没监控不踏实，监控跑起来发现没备份不放心，备份稳了又想"在外也能摸回家机"于是加了 Tailscale……每一步都是上一步逼出来的。
 
-这是工程的真实样子：**不是一开始设计好架构，而是遇到一个解决一个，最后回头看才发现自己搭出了一个栈**。写这篇总结的时候我才第一次把所有零件摆在一起看，发现居然挺整齐——四个"零"贯穿每一层，systemd --user 一套体系管所有服务，bash 脚本接住所有运维缺口。这不是巧合，是约束倒逼出来的：家用、没钱、没公网 IP、不想给 root，能用的工具就那几个，反而促成了连贯的设计。
+这是工程的真实样子：**不是一开始设计好架构，而是遇到一个解决一个，最后回头看才发现自己搭出了一个栈**。写这篇总结的时候我才第一次把所有零件摆在一起看，发现居然挺整齐——四个"零"贯穿每一层，systemd --user 一套体系管所有服务，bash 脚本接住所有运维缺口，Tailscale 补上私有访问。这不是巧合，是约束倒逼出来的：家用、没钱、没公网 IP、不想给 root，能用的工具就那几个，反而促成了连贯的设计。
 
 如果你也想搭一套类似的，按下面顺序读最快：
 
@@ -231,7 +248,8 @@ flowchart LR
 6. [GitHub SSH 规范工作流](/posts/ssh-workflow/) — 推送通道
 7. [轻量健康检查](/posts/health-check/) — 监控
 8. [家用 Linux 主机备份策略](/posts/backup-strategy/) — 备份
+9. [用 Tailscale 把家机变成随身私密网](/posts/tailscale-private-mesh/) — 私有访问层
 
-剩下 4 篇（[博客技术栈升级](/posts/blog-stack-upgrade/)、[在 Linux 上自托管 Gitea](/posts/gitea-self-host/)、[Ubuntu 24.04 中文输入法折腾记](/posts/ubuntu-ibus-pinyin/)、[第一篇：博客上线了](/posts/hello/)）按需读。
+剩下 5 篇（[博客技术栈升级](/posts/blog-stack-upgrade/)、[在 Linux 上自托管 Gitea](/posts/gitea-self-host/)、[Ubuntu 24.04 中文输入法折腾记](/posts/ubuntu-ibus-pinyin/)、[第一篇：博客上线了](/posts/hello/)、[给博客加自动化巡检 CI](/posts/blog-ci-automation/)）按需读。
 
 栈还会继续长，新的文章会继续写。这篇只是阶段性总结，不是终态。
