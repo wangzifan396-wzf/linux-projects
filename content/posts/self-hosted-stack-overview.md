@@ -188,7 +188,7 @@ Gitea 单独写了一篇 [在 Linux 上自托管 Gitea](/posts/gitea-self-host/)
 
 - **配置版本化**：`~/Files/scripts/` 和 `~/.config/systemd/user/` 目前没进版本控制，整理成独立 dotfiles 仓库开源，方便迁移和回滚。
 - **SEO 与性能**：sitemap 已生成但没主动提交到搜索引擎；robots.txt 可优化；图片可加 `loading="lazy"` 和 `width/height` 防 CLS。
-- **更多运维博文**：[cron vs systemd timer 对比](/posts/cron-vs-systemd-timer/)、SSH 安全加固（fail2ban、密钥 passphrase）、静态站点评测工具（[Lighthouse](/posts/lighthouse-evaluation/) / PageSpeed）。
+- **更多运维博文**：[cron vs systemd timer 对比](/posts/cron-vs-systemd-timer/)、SSH 安全加固（fail2ban、密钥 passphrase）、静态站点评测工具（[Lighthouse](/posts/lighthouse-evaluation/) / PageSpeed）、[博客自动化巡检 CI](/posts/blog-ci-automation/)。
 - **正式域名**：等哪天觉得 `wangzifan396-wzf.github.io/linux-projects/` 太长，可以买个短域名 CNAME 到 GitHub Pages，但目前免费子域够用。
 
 ## 七、整体部署流程图

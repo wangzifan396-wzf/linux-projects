@@ -17,6 +17,7 @@
 ```
 linux-projects/
 ├── .github/workflows/hugo.yml   # GitHub Actions：push 到 main 自动构建部署
+├── .github/workflows/ci.yml     # Blog Quality CI：构建+内链审计+死链检查
 ├── archetypes/                  # Hugo 文章模板
 ├── assets/css/extended/         # 自定义 CSS（覆盖在 PaperMod 之上）
 ├── content/
@@ -31,6 +32,7 @@ linux-projects/
 │   └── _shortcodes/             # 自定义 shortcode（mermaid）
 ├── scripts/                     # 实际运行的运维脚本
 │   ├── health-check.sh          # 健康检查脚本（systemd timer 每 5min 触发）
+│   ├── internal-link-audit.sh   # 博文内链审计（CI 与本地复用）
 │   └── README.md                # 脚本说明
 ├── systemd/                     # systemd --user unit 文件
 │   ├── wireproxy-warp.service   # wireproxy WARP SOCKS5 代理
@@ -86,6 +88,7 @@ hugo --minify
 
 | 日期 | 标题 | 关键词 |
 | --- | --- | --- |
+| 2026-08-27 | [给博客加自动化巡检 CI](content/posts/blog-ci-automation.md) | Hugo, CI, GitHub Actions, 内部链接, 质量保障 |
 | 2026-08-26 | [静态站点性能评测实战：用 performance API 给本博客做 Lighthouse 自检](content/posts/lighthouse-evaluation.md) | Lighthouse, 性能, SEO, Hugo, Core-Web-Vitals |
 | 2026-08-26 | [家用 Linux SSH 安全加固 7 步：从 22 端口裸奔到 fail2ban 自动封禁](content/posts/ssh-hardening.md) | SSH, 安全, fail2ban, sshd_config, Linux, 运维 |
 | 2026-08-26 | [cron vs systemd timer：家用 Linux 定时任务选哪个？（附迁移实战 diff）](content/posts/cron-vs-systemd-timer.md) | cron, systemd-timer, Linux, 运维, 对比 |
@@ -119,6 +122,16 @@ hugo --minify
 部署状态徽章：
 
 [![Deploy Hugo to GitHub Pages](https://github.com/wangzifan396-wzf/linux-projects/actions/workflows/hugo.yml/badge.svg)](https://github.com/wangzifan396-wzf/linux-projects/actions/workflows/hugo.yml)
+
+## 质量保障（CI + 监控告警）
+
+- **Blog Quality CI**：[`.github/workflows/ci.yml`](.github/workflows/ci.yml) 在每次 push/PR 自动跑 `hugo --minify` 构建 + [`scripts/internal-link-audit.sh`](scripts/internal-link-audit.sh) 内链审计（死链硬失败）+ lychee 外链死链检查（顾问项）。
+- **内链审计脚本**：本地可复用——`bash scripts/internal-link-audit.sh content/posts` 一键查死链与孤立博文。
+- **监控告警**：[`scripts/health-check.sh`](scripts/health-check.sh) 已预留通知钩子，设好环境变量即生效：**`TG_BOT_TOKEN` + `TG_CHAT_ID`**（可选 `TG_PROXY=socks5://127.0.0.1:1080`）走 Telegram；或 **`NOTIFY_WEBHOOK`** 走通用 Webhook。未设置则静默只写日志。
+
+质量 CI 徽章：
+
+[![Blog Quality CI](https://github.com/wangzifan396-wzf/linux-projects/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzifan396-wzf/linux-projects/actions/workflows/ci.yml)
 
 ## 技术栈
 

@@ -17,6 +17,31 @@ touch "$STATE_FILE"
 # 当前时间（ISO 8601 + 时区）
 now_iso() { date '+%Y-%m-%dT%H:%M:%S%:z'; }
 
+# 告警通知（env 守卫：未设变量则静默，绝不误报）
+# 支持 Telegram（TG_BOT_TOKEN + TG_CHAT_ID，可选 TG_PROXY）与通用 Webhook（NOTIFY_WEBHOOK）
+notify() {
+  local msg="$1"
+  if [ -n "${TG_BOT_TOKEN:-}" ] && [ -n "${TG_CHAT_ID:-}" ]; then
+    local proxy_opt=()
+    [ -n "${TG_PROXY:-}" ] && proxy_opt=(--socks5-hostname "${TG_PROXY}")
+    for i in 1 2 3 4 5; do
+      if curl -sS -o /dev/null -w "%{http_code}" "${proxy_opt[@]}" \
+          --connect-timeout 5 --max-time 10 \
+          "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+          --data-urlencode "chat_id=${TG_CHAT_ID}" \
+          --data-urlencode "text=$msg" >/dev/null 2>&1; then
+        return 0
+      fi
+      sleep 1
+    done
+  fi
+  if [ -n "${NOTIFY_WEBHOOK:-}" ]; then
+    curl -sS -o /dev/null --connect-timeout 5 --max-time 10 \
+      --data-urlencode "text=$msg" "${NOTIFY_WEBHOOK}" >/dev/null 2>&1 || true
+  fi
+  return 0
+}
+
 # 结果聚合
 RESULTS=()
 FAIL_COUNT=0
@@ -108,4 +133,16 @@ echo "$LINE" >> "$LOG_FILE"
 if [ -f "$LOG_FILE" ]; then
     tmp=$(tail -n "$MAX_LOG_LINES" "$LOG_FILE")
     echo "$tmp" > "$LOG_FILE"
+fi
+
+# === 告警通知（env 守卫）===
+# 连续失败达到阈值才告警，避免单次抖动误报；恢复时也发一条
+if [ "$FAIL_COUNT" -gt 0 ]; then
+  if [ "$NEW_STREAK" -ge "${ALERT_THRESHOLD:-2}" ]; then
+    notify "🚨 主机健康检查失败（连续 ${NEW_STREAK} 次）: ${RESULTS[*]}"
+  fi
+else
+  if [ "$STATE_FAIL" -gt 0 ]; then
+    notify "✅ 主机健康检查已恢复"
+  fi
 fi

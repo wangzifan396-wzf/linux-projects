@@ -1,0 +1,52 @@
+# 博客质量巡检 CI
+# 触发：push/PR 到 main，或手动 workflow_dispatch
+# 职责：
+#   1) Hugo 构建必须通过（硬门槛）
+#   2) 博文内链审计：死链直接失败（硬门槛）
+#   3) lychee 死链检查（含外链）：仅顾问，不阻断部署
+name: Blog Quality CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.165.0'
+          extended: true
+
+      - name: Build with Hugo
+        run: hugo --minify --gc
+
+      - name: Internal link audit
+        run: bash scripts/internal-link-audit.sh content/posts
+
+      - name: Dead link check (lychee, advisory)
+        continue-on-error: true
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --timeout 20 --retry 3 --max-concurrency 4 --accept 200,206 --exclude-mail public/
